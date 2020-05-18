@@ -8,7 +8,9 @@ const salt = bcrypt.genSaltSync(10);
 
 const _ = require("underscore");
 
-app.get('/usuario', function(req, res) {
+const { verificaToken, verificaRoleAdmin } = require("../middlewares/autenticacion");
+
+app.get('/usuario', verificaToken, (req, res) => {
 
     let desde = req.query.desde || 0;
     desde = Number(desde);
@@ -54,7 +56,7 @@ app.get('/usuario/count', function(req, res) {
             })
         })
 });
-app.post('/usuario', function(req, res) {
+app.post('/usuario', [verificaToken, verificaRoleAdmin], function(req, res) {
     let body = req.body;
     let usuario = new Usuario({
         nombre: body.nombre,
@@ -80,35 +82,37 @@ app.post('/usuario', function(req, res) {
     });
 })
 
-app.post('/usuario/masivo', function(req, res) {
+app.post('/usuario/masivo', [verificaToken, verificaRoleAdmin], function(req, res) {
     let body = req.body;
     altaUsuarioMasivo(body, (err => {
         console.log(err);
     }))
 })
 
-app.put('/usuario/:id', function(req, res) {
+app.put('/usuario/:id', [verificaToken, verificaRoleAdmin], function(req, res) {
     let id = req.params.id;
     let camposActualizables = ["nombre", "email", "img", "role", "estado"];
     let body = _.pick(req.body, camposActualizables);
 
 
-    Usuario.findByIdAndUpdate(id, body, { new: true, runValidators: true }, (err, usuarioDB) => {
+    Usuario.findByIdAndUpdate(id, body, { new: true /*, runValidators: true */ }, (err, usuarioDB) => {
         if (err) {
             res.status(400).json({
                 ok: false,
-                err
+                err: {
+                    message: "no se ha podido actualizar"
+                }
             });
         }
         res.json({
             ok: true,
-            usuario: usuarioDB
+            usuarioDB
         });
     });
 
 })
 
-app.delete('/usuario/:id', function(req, res) {
+app.delete('/usuario/:id', [verificaToken, verificaRoleAdmin], function(req, res) {
     let estado = false;
     let id = req.params.id;
     Usuario.findByIdAndUpdate(id, { estado }, { new: true }, (err, usuarioDB) => {

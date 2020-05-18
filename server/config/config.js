@@ -24,9 +24,17 @@ else
 
 process.env.URLDB = urlDB
 
+//====================================
+//Vencimiento del Token
+//====================================
+//60 segundos
+//60 minutos
+//24 horas
+//30 días
+process.env.CADUCIDAD_TOKEN = 60 * 60 * 24 * 30;
 
+//====================================
+//SEED de autentificacion
+//====================================
 
-
-
-
-//'mongodb://localhost:27017/cafe'
+process.env.SEED = process.env.SEED || 'este-es-el-seed-desarrollo';
